@@ -35,6 +35,7 @@ class _HomeState extends State<Home> {
     return File("${directory.path}/data.json");
   }
 
+// Salvar algum dado no arquivo
   Future<File> _saveData() async {
     // transformando a lista em JSON
     String data = json.encode(_todoList);
@@ -44,7 +45,7 @@ class _HomeState extends State<Home> {
     return file.writeAsString(data);
   }
 
-  // Função para obter o dados
+  // Função para obter o dados do arquivo
   Future<String> _readData() async {
     try {
       //pegando oa rquivo
