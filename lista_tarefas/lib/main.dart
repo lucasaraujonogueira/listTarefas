@@ -23,7 +23,34 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Lista de Tarefas"),
+        backgroundColor: Colors.blueAccent,
+        centerTitle: true,
+      ),
+      body: Column(
+        children: <Widget>[
+          //container responsável pelo spaçamento
+          Container(
+            padding: EdgeInsets.fromLTRB(17, 1, 7, 1),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: //aqyu vamos adicionar o textfield e o botão
+                      TextField(
+                    decoration: InputDecoration(
+                        labelText: "Nova Tarefa",
+                        labelStyle: TextStyle(color: Colors.blueAccent)),
+                  ),
+                ),
+                IconButton(icon: Icon(Icons.add), onPressed: () {})
+              ],
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   //Criar uma função para retornar o arquivo em que vamos salvar os dados
