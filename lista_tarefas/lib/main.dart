@@ -18,8 +18,36 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  var _toDoController = TextEditingController();
   // Lista que vai armazenar nossas tarefas
-  final _todoList = [];
+  var _todoList = [];
+  //Ler os dados, metodo sempre que iniciamos a teka[
+  @override
+  void initState() {
+    super.initState();
+    _readData().then((data) {
+      setState(() {
+        _todoList = json.decode(data);
+      });
+    });
+  }
+
+  // adicionando mapa na lista
+  void _addTodo() {
+    setState(() {
+      //acessando texto pelo controlador
+      Map<String, dynamic> newTodo = Map();
+      // colocar o titulo da tarefa
+      newTodo['title'] = _toDoController.text;
+      //Zerando o texto do texto field, assim que o clicar no botão o nome irá ser resetado
+      _toDoController.text = "";
+      //tarefa não concluida
+      newTodo['ok'] = false;
+      //adicionar o newtodo na lista
+      _todoList.add(newTodo);
+      _saveData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,17 +64,50 @@ class _HomeState extends State<Home> {
             padding: EdgeInsets.fromLTRB(17, 1, 7, 1),
             child: Row(
               children: <Widget>[
+                // Para dar espaço entre um campo e o outro
                 Expanded(
                   child: //aqyu vamos adicionar o textfield e o botão
                       TextField(
+                    controller: _toDoController,
                     decoration: InputDecoration(
                         labelText: "Nova Tarefa",
                         labelStyle: TextStyle(color: Colors.blueAccent)),
                   ),
                 ),
-                IconButton(icon: Icon(Icons.add), onPressed: () {})
+                IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed:
+                        _addTodo) // Aqui dentro do botão vou chamar a função addTodoList
               ],
             ),
+          ),
+          // Aqui vai vim a lista
+          Expanded(
+            // ListView = Widget que podemos fazer uma lista, Builder = construia lista conforme for rodando ela
+            child: ListView.builder(
+                // Para descolar da linha Nova Tarefa
+                padding: EdgeInsets.only(top: 10.0),
+                // Quantidade de item que vamos ter
+                itemCount: _todoList.length,
+                //index é o elemento que estamos desenhando no momento
+                itemBuilder: (context, index) {
+                  return CheckboxListTile(
+                    title: Text(_todoList[index]["title"]),
+                    value: _todoList[index]["ok"],
+                    // mudando icone para ok (verdinho) desmarcado como error
+                    secondary: CircleAvatar(
+                      child: Icon(
+                          _todoList[index]["ok"] ? Icons.check : Icons.error),
+                    ),
+                    onChanged: (c) {
+                      // se marcamos no ok vamos adicionar como C
+                      setState(() {
+                        _todoList[index]["ok"] = c;
+                      });
+                      _saveData();
+                    },
+                  );
+                }),
           )
         ],
       ),
