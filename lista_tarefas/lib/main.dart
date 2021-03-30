@@ -21,6 +21,12 @@ class _HomeState extends State<Home> {
   var _toDoController = TextEditingController();
   // Lista que vai armazenar nossas tarefas
   var _todoList = [];
+
+  // Mapa que vamos remover
+  Map<String, dynamic> _lastRemoved;
+  // saber a posição que foi removida
+  int _lastRemovedPos;
+
   //Ler os dados, metodo sempre que iniciamos a teka[
   @override
   void initState() {
@@ -71,7 +77,7 @@ class _HomeState extends State<Home> {
                     controller: _toDoController,
                     decoration: InputDecoration(
                         labelText: "Nova Tarefa",
-                        labelStyle: TextStyle(color: Colors.blueAccent)),
+                        labelStyle: TextStyle(color: Colors.lightBlue)),
                   ),
                 ),
                 IconButton(
@@ -90,32 +96,71 @@ class _HomeState extends State<Home> {
                 // Quantidade de item que vamos ter
                 itemCount: _todoList.length,
                 //index é o elemento que estamos desenhando no momento
-                itemBuilder: (context, index) {
-                  return CheckboxListTile(
-                    title: Text(_todoList[index]["title"]),
-                    value: _todoList[index]["ok"],
-                    // mudando icone para ok (verdinho) desmarcado como error
-                    secondary: CircleAvatar(
-                      child: Icon(
-                          _todoList[index]["ok"] ? Icons.check : Icons.error),
-                    ),
-                    onChanged: (c) {
-                      // se marcamos no ok vamos adicionar como C
-                      setState(() {
-                        _todoList[index]["ok"] = c;
-                      });
-                      _saveData();
-                    },
-                  );
-                }),
+                itemBuilder: buildItem),
           )
         ],
       ),
     );
   }
 
-  //Criar uma função para retornar o arquivo em que vamos salvar os dados
+  Widget buildItem(context, index) {
+    // Dismissible item que vai permitir que arrastamos o icone para direita
+    return Dismissible(
+      // Key é o tempo atual em milisegundos
+      key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
+      //Temos que especificar um background
+      background: Container(
+        //faixa vermelha atrás do ícone
+        color: Colors.red,
+        //colocando icone da lixeira quando for arrastar para direita
+        child: Align(
+          //Align alinha o filho
+          alignment: Alignment(-0.9, 0.0),
+          child: Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      // Definir a direção da esquerda para direita
+      direction: DismissDirection.startToEnd,
+      child: CheckboxListTile(
+        title: Text(_todoList[index]["title"]),
+        value: _todoList[index]["ok"],
+        // mudando icone para ok (verdinho) desmarcado como error
+        secondary: CircleAvatar(
+          child: Icon(_todoList[index]["ok"] ? Icons.check : Icons.error),
+        ),
+        onChanged: (c) {
+          // se marcamos no ok vamos adicionar como C
+          setState(() {
+            _todoList[index]["ok"] = c;
+          });
+          _saveData();
+        },
+      ),
+      // Função que vai chamar o item sempre que mover ele para direita
+      onDismissed: (diretion) {
+        setState(() {
+          //pPara remover o item, primeiro vamos duplicar ele, em seguida
+          _lastRemoved = Map.from(_todoList[index]);
+          // Salvar a posição qe foi removida
+          _lastRemovedPos = index;
+          // Remover da todoList
+          _todoList.removeAt(index);
 
+          // Salvar a alista com item removida
+          _saveData();
+
+          final snack = SnackBar(
+            content: Text("Tarefa ${_lastRemoved["title"]} Removida"),
+          );
+        });
+      },
+    );
+  }
+
+  //Criar uma função para retornar o arquivo em que vamos salvar os dados
   Future<File> _getFile() async {
     //Pegando o diretorio onde vamos armazenar as tarefas
     final directory = await getApplicationDocumentsDirectory();
